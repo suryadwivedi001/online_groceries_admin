@@ -24,7 +24,7 @@ void configLoading() {
     ..indicatorSize = 45.0
     ..radius = 5.0
     ..progressColor = TColor.primaryText
-    ..backgroundColor = TColor.primary
+    ..backgroundColor = TColor.white
     ..indicatorColor = Colors.yellow
     ..textColor = TColor.primaryText
     ..userInteractions = false
