@@ -14,10 +14,20 @@ class ProductTabScreen extends StatefulWidget {
 }
 
 class _ProductTabScreenState extends State<ProductTabScreen> {
-  var pVM = Get.put(ProductViewModel());
+  late final ProductViewModel pVM;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Find the existing instance created in MainTabView
+    pVM = Get.find<ProductViewModel>();
+    print('[DEBUG] ProductTabScreen initState: Found ProductViewModel instance');
+  }
 
   @override
   Widget build(BuildContext context) {
+    print('[DEBUG] ProductTabScreen build: product count = ${pVM.listArr.length}');
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
@@ -36,6 +46,7 @@ class _ProductTabScreenState extends State<ProductTabScreen> {
             padding: const EdgeInsets.only(right: 15),
             child: InkWell(
               onTap: () {
+                print('[DEBUG] Add product button tapped');
                 Get.to(() => const ProductAddScreen());
               },
               child: Center(
@@ -58,34 +69,45 @@ class _ProductTabScreenState extends State<ProductTabScreen> {
           ),
         ],
       ),
-      body: Obx(
-        () => GridView.builder(
-          itemCount: pVM.listArr.length,
+      body: Obx(() {
+        print('[DEBUG] Obx rebuild: product count = ${pVM.listArr.length}');
+        if (pVM.listArr.isEmpty) {
+          print('[DEBUG] Product list is empty - showing fallback UI');
+          return Center(child: Text("No products found"));
+        }
+
+        return GridView.builder(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              childAspectRatio: 0.75,
-              crossAxisSpacing: 2,
-              mainAxisSpacing: 8),
+            crossAxisCount: 2,
+            childAspectRatio: 0.75,
+            crossAxisSpacing: 2,
+            mainAxisSpacing: 8,
+          ),
+          itemCount: pVM.listArr.length,
           itemBuilder: (context, index) {
-            var obj = pVM.listArr[index];
-
+            final obj = pVM.listArr[index];
+            print('[DEBUG] Building product cell for index $index: ${obj.name}');
             return ProductCell(
               pObj: obj,
               onPressed: () async {
+                print('[DEBUG] ProductCell tapped for: ${obj.name}');
                 await Get.to(() => OfferAddScreen(obj: obj));
+                print('[DEBUG] Returned from OfferAddScreen, refreshing list');
                 pVM.apiList();
               },
               onEdit: () {
+                print('[DEBUG] Edit triggered on product: ${obj.name}');
                 pVM.actionEdit(obj);
               },
               onDelete: () {
+                print('[DEBUG] Delete triggered on product: ${obj.name}');
                 pVM.actionDelete(obj);
               },
             );
           },
-        ),
-      ),
+        );
+      }),
     );
   }
 }

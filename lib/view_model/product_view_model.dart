@@ -45,6 +45,7 @@ class ProductViewModel extends GetxController {
   @override
   void onInit() {
     // TODO: implement onInit
+    print('[DEBUG] ProductViewModel: onInit called');
     super.onInit();
     apiList();
     apiCategoryTypeBrand();
@@ -368,6 +369,7 @@ class ProductViewModel extends GetxController {
 
   //TODO: ApiCalling
   void apiList() {
+    print('[DEBUG] apiList called');
     Globs.showHUD();
     ServiceCall.post({}, SVKey.svProductList, isToken: true,
         withSuccess: (responseObj) async {

@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:get/get.dart';
 import '../account_tab/account_view.dart';
 import '../category_tab/category_tab_screen.dart';
-import '../offer_tab/offer_tab_view.dart'; // already relative, no change needed
+import '../offer_tab/offer_tab_view.dart';
 import '../order_tab/order_tab_screen.dart';
 import '../product_tab/product_tab_screen.dart';
 import '../type_tab/type_tab_screen.dart';
-
 import '../../common/color_extension.dart';
+import '../../view_model/product_view_model.dart';
 
 class MainTabView extends StatefulWidget {
   const MainTabView({super.key});
@@ -16,28 +17,43 @@ class MainTabView extends StatefulWidget {
   State<MainTabView> createState() => _MainTabViewState();
 }
 
-class _MainTabViewState extends State<MainTabView>
-    with SingleTickerProviderStateMixin {
-  TabController? controller;
+class _MainTabViewState extends State<MainTabView> with SingleTickerProviderStateMixin {
+  late TabController controller;
   int selectTab = 0;
+
+  // Create and keep single controller instance
+  final ProductViewModel pVM = Get.put(ProductViewModel());
 
   @override
   void initState() {
     super.initState();
 
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.leanBack);
-    controller = TabController(length: 5, vsync: this);
-    controller?.addListener(() {
-      selectTab = controller?.index ?? 0;
 
-      setState(() {});
+    controller = TabController(length: 5, vsync: this);
+
+    controller.addListener(() {
+      if (!controller.indexIsChanging) {
+        selectTab = controller.index;
+        setState(() {});
+
+        if (selectTab == 0) {
+          print('[DEBUG] Product tab selected, triggering apiList');
+          pVM.apiList();
+        }
+      }
     });
+
+    // Optionally, initially trigger apiList if first tab:
+    if (selectTab == 0) {
+      pVM.apiList();
+    }
   }
 
   @override
   void dispose() {
+    controller.dispose();
     super.dispose();
-    controller?.dispose();
   }
 
   @override
@@ -47,7 +63,6 @@ class _MainTabViewState extends State<MainTabView>
         ProductTabScreen(),
         CategoryTabScreen(),
         TypeTabScreen(),
-        // OfferTabScreen(),
         OrderTabScreen(),
         AccountView(),
       ]),
@@ -59,8 +74,7 @@ class _MainTabViewState extends State<MainTabView>
               topRight: Radius.circular(15),
             ),
             boxShadow: [
-              BoxShadow(
-                  color: Colors.black26, blurRadius: 3, offset: Offset(0, -2))
+              BoxShadow(color: Colors.black26, blurRadius: 3, offset: Offset(0, -2))
             ]),
         child: BottomAppBar(
           color: Colors.transparent,
